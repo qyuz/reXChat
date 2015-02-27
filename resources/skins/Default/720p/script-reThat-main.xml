@@ -1,0 +1,105 @@
+<window type="window" id="9506">
+    <allowoverlay>no</allowoverlay>
+    <backgroundcolor>0x77777777</backgroundcolor>
+    <defaultcontrol always="true">60</defaultcontrol>
+    <!--zorder>6</zorder-->
+    <onload condition="Skin.HasSetting(ColorMenu)">Skin.ToggleSetting(ColorMenu)</onload>
+    <onunload condition="Skin.HasSetting(ColorMenu)">Skin.ToggleSetting(ColorMenu)</onunload>
+    <onload condition="IsEmpty(skin.string(ChatMenuColorString))">Skin.SetString(ChatMenuColorString,deeppink)</onload>
+    <onload condition="Skin.HasSetting(ChatContextMenu)">Skin.ToggleSetting(ChatContextMenu)</onload>
+
+    <controls>
+        <control type="group">
+            <posx>0</posx>
+            <posy>0</posy>
+            <!--<animation type="WindowOpen">-->
+                <!--<effect type="slide" start="600,0" end="0,0" time="500" delay="400" tween="quadratic" easing="out"/>-->
+            <!--</animation>-->
+            <!--<animation type="WindowClose">-->
+                <!--<effect type="slide" start="0,0" end="600,0" time="300"/>-->
+            <!--</animation>-->
+            <!--<animation type="Conditional" condition="Skin.Hassetting(ChatNamesList)">-->
+                <!--<effect type="slide" start="0,0" end="-200,0" time="400" delay="0" tween="quadratic" easing="out"/>-->
+            <!--</animation>-->
+			<control type="image">
+				<posx>880</posx>
+				<posy>71</posy>
+				<width>400</width>
+				<height>649</height>
+				<aspectratio>stretch</aspectratio>
+				<texture>IrcChat/ChatBackground.png</texture>
+				<!--<colordiffuse>$INFO[skin.string(ChatMenuColorString)]</colordiffuse>-->
+				<colordiffuse>0xff000000</colordiffuse>
+				<animation effect="fade" start="0" end="63" time="0" >WindowOpen</animation>
+			</control>
+
+            <control type="list" id="1331">
+                <description>Chat messages list</description>
+                <posx>895</posx>
+                <posy>100</posy>
+                <width>350</width>
+                <height>523</height>
+                <onleft>60</onleft>
+                <onright>1243</onright>
+                <onup>1300</onup>
+                <ondown>1300</ondown>
+                <pagecontrol>60</pagecontrol>
+                <scrolltime tween="cubic" easing="inout">325</scrolltime>
+                <orientation>vertical</orientation>
+                <itemlayout height="25" width="350">
+                    <!--<control type="label">-->
+                        <!--<posx>10</posx>-->
+                        <!--<posy>0</posy>-->
+                        <!--<width min="350" max="9999">auto</width>-->
+                        <!--<height>20</height>-->
+                        <!--<font>font13</font>-->
+                        <!--<textcolor>white</textcolor>-->
+                        <!--<aligny>center</aligny>-->
+                        <!--<align>left</align>-->
+                        <!--<label>[B]$INFO[ListItem.Label2][/B]</label>-->
+                        <!--<scroll>false</scroll>-->
+                    <!--</control>-->
+                    <control type="label">
+                        <posx>10</posx>
+                        <posy>0</posy>
+                        <width min="350" max="9999">auto</width>
+                        <height>20</height>
+                        <font>font13</font>
+                        <font>fontContextMenu</font>
+                        <textcolor>white</textcolor>
+                        <aligny>center</aligny>
+                        <align>left</align>
+                        <label>$INFO[ListItem.Label]</label>
+                        <scroll>false</scroll>
+                    </control>
+                </itemlayout>
+                <focusedlayout height="25" width="350">
+                    <!--<control type="label">-->
+                        <!--<posx>10</posx>-->
+                        <!--<posy>0</posy>-->
+                        <!--<width>350</width>-->
+                        <!--<height>20</height>-->
+                        <!--<font>font13</font>-->
+                        <!--<textcolor>white</textcolor>-->
+                        <!--<aligny>center</aligny>-->
+                        <!--<align>left</align>-->
+                        <!--<label>[B]$INFO[ListItem.Label2][/B]</label>-->
+                        <!--<scroll>false</scroll>-->
+                    <!--</control>-->
+                    <control type="label">
+                        <posx>10</posx>
+                        <posy>0</posy>
+                        <width>350</width>
+                        <height>20</height>
+                        <font>fontContextMenu</font>
+                        <textcolor>white</textcolor>
+                        <aligny>center</aligny>
+                        <align>left</align>
+                        <label>$INFO[ListItem.Label]</label>
+                        <scroll>false</scroll>
+                    </control>
+                </focusedlayout>
+            </control>
+        </control>
+    </controls>
+</window>

@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<settings>
+    <category label="25000">
+        <setting label="25010" type="number" id="backgroundX" default="1"/>
+        <setting label="25011" type="number" id="backgroundY" default="1"/>
+        <setting label="25012" type="number" id="backgroundWidth" default="400"/>
+        <setting label="25013" type="number" id="backgroundHeight" default="542"/>
+        <setting label="25020" type="number" id="chatX" default="1"/>
+        <setting label="25021" type="number" id="chatY" default="1"/>
+        <setting label="25022" type="number" id="chatWidth" default="400"/>
+        <setting label="25023" type="number" id="chatHeight" default="542"/>
+        <setting label="25024" type="number" id="chatTextX" default="1"/>
+        <setting label="25025" type="number" id="chatTextY" default="0"/>
+        <setting label="25026" type="number" id="characters" default="35"/>
+        <setting label="25027" type="number" id="delay" default="17"/>
+    </category>
+</settings>

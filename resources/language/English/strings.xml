@@ -1,0 +1,14 @@
+<strings>
+    <string id="25010">Background X</string>
+    <string id="25011">Background Y</string>
+    <string id="25012">Background width</string>
+    <string id="25013">Background height</string>
+    <string id="25020">Chat X</string>
+    <string id="25021">Chat Y</string>
+    <string id="25022">Chat width</string>
+    <string id="25023">Chat height</string>
+    <string id="25024">Chat text X offset</string>
+    <string id="25025">Chat text Y offset</string>
+    <string id="25026">Characters per line</string>
+    <string id="25027">Delay</string>
+</strings>
