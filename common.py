@@ -1,5 +1,4 @@
-import calendar, datetime, dateutil, json, os, re, urllib, xbmc, xbmcgui, xbmcvfs
-import dateutil.parser
+import calendar, datetime, dateutil, dateutil.parser, json, os, re, urllib, xbmc, xbmcgui, xbmcvfs
 
 ENABLE_CACHE = True #remove this
 

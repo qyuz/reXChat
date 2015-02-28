@@ -1,4 +1,5 @@
-﻿import xbmcaddon
+﻿import common, rechat, twitch
+import xbmcaddon
 import xbmcgui
 import xbmc
 import xbmcvfs
@@ -8,7 +9,11 @@ import classes
 
 import  time
 
-d = stuff.Debugger()
+from common import Cache, Debugger
+
+d = Debugger()
+Cache.CACHE_PATH = 'special://temp/reXChat/'
+
 # d.dialog('script started')
 addon = xbmcaddon.Addon()
 # addon.openSettings()
@@ -171,7 +176,7 @@ def drawUI():
     playbackController.kill()
 
 def rechatServiceTest():
-    twitchAPI = classes.CachedTwitchAPI()
+    twitchAPI = twitch.CachedAPI()
 #    streamInfo = twitchAPI.getStreamInfo(videoId='a611375915')
 #    d.dialog(streamInfo.streamId)
 #    d.dialog(streamInfo.recordedAt)
@@ -182,14 +187,14 @@ def rechatServiceTest():
 #    d.dialog(streamInfo.streamId)
 #    d.dialog(streamInfo.recordedAt)
 #    d.dialog(streamInfo.recordedAtMs)
-#    rechatService = classes.RechatService('v3800416', 1424183641000)
-#    rechatService = classes.RechatService(streamInfo)
+#    rechatService = rechat.Service('v3800416', 1424183641000)
+#    rechatService = rechat.Service(streamInfo)
 #    rMessages = rechatService.next()
 #    d.dialog(rMessages[-1])
 #    d.dialog(rechatService.next()[-1])
 #    d.dialog(rechatService.afterMs(1424183641000)[-1])
 #    d.dialog(rechatService.next()[-1])
-    cachedRechatService = classes.CachedRechatService(streamInfo)
+    cachedRechatService = rechat.CachedService(streamInfo)
     cRMessages = cachedRechatService.next()
     d.dialog(cRMessages[-1])
     cRMessages = cachedRechatService.next()

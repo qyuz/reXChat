@@ -1,7 +1,5 @@
 import common, rechat, twitch, xbmc, xbmcvfs
 from common import Cache, Debugger
-from rechat import CachedRechatService, RechatService
-from twitch import CachedTwitchAPI, TwitchAPI
 
 
 Cache.CACHE_PATH = 'special://temp/reXChat/'
@@ -11,10 +9,10 @@ streams = [
 ]
 
 def download():
-    twitchAPI = CachedTwitchAPI()
+    twitchAPI = twitch.CachedAPI()
     for streamId in streams:
         streamInfo = twitchAPI.getStreamInfo(streamId = streamId)
-        rechatService = CachedRechatService(streamInfo)
+        rechatService = rechat.CachedService(streamInfo)
         while(rechatService.hasMore()):
             rechatService.next()
         d.dialog('DONE WITH %s' %streamId)

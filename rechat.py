@@ -3,10 +3,10 @@ from common import datetimeStringToLong, jsonRequest, longToDatetimeString
 
 d = common.Debugger()
 
-class RechatCache(common.Cache):
+class Cache(common.Cache):
     def __init__(self, streamInfo):
         self.streamInfo = streamInfo
-        super(RechatCache, self).__init__(self.streamInfo.streamId)
+        super(Cache, self).__init__(self.streamInfo.streamId)
     def _cacheFile(self, file):
         m = re.match('(start_)?(\d+)-(\d+)', file)
         return { 'name': file, 'start': int(m.group(2)), 'end': int(m.group(3)) }
@@ -26,9 +26,9 @@ class RechatCache(common.Cache):
         fileName = '%s%s-%s' %(
             prefix,
             datetimeStringToLong(lastReceivedAt),
-            datetimeStringToLong(RechatService._messages(response)[-1]['_source']['recieved_at'])
+            datetimeStringToLong(Service._messages(response)[-1]['_source']['recieved_at'])
             )
-        super(RechatCache, self).putJSON(fileName, response)
+        super(Cache, self).putJSON(fileName, response)
     def findStart(self):
         return self._findFirst(lambda cacheFile: cacheFile['name'].startswith('start_'))
     def findStrict(self, startAt):
@@ -40,7 +40,7 @@ class RechatCache(common.Cache):
     def putStart(self, response):
         self._put('start_', self.streamInfo.recordedAt, response)
 
-class RechatService(object):
+class Service(object):
     def __init__(self, streamInfo):
         self.streamInfo = streamInfo
         self.lastReceivedAt = None
@@ -51,7 +51,7 @@ class RechatService(object):
         return response["hits"]["hits"]
     def _response(self, response):
         if(response != None): #cache returns None
-            rechatMessages = RechatService._messages(response)
+            rechatMessages = Service._messages(response)
             if(len(rechatMessages) > 0):
                 self.lastReceivedAt = rechatMessages[-1]['_source']['recieved_at']
                 self.end = False
@@ -78,17 +78,17 @@ class RechatService(object):
         rechatMessages = self._response(response)
         return rechatMessages
 
-class CachedRechatService(RechatService):
+class CachedService(Service):
     def __init__(self, streamInfo):
-        super(CachedRechatService, self).__init__(streamInfo)
-        self.cache = RechatCache(streamInfo)
+        super(CachedService, self).__init__(streamInfo)
+        self.cache = Cache(streamInfo)
     def _log(self, msg): return d.component('rechat.cService', msg)
     def _search(self, cacheCheck, rechatCall, cachePut, fallbackCacheCheck):
         cacheFileName = cacheCheck()
         response = self.cache.readJSON(cacheFileName['name']) if cacheFileName else None
         if(response == None):
             response = rechatCall()
-            if(len(RechatService._messages(response)) > 0):
+            if(len(Service._messages(response)) > 0):
                 cachePut(response)
             else:
                 self._log('trying fallback check in cache in case logs were removed')
@@ -102,13 +102,13 @@ class CachedRechatService(RechatService):
     def _searchAfter(self, after):
         afterMs = datetimeStringToLong(after)
         cacheCheck = functools.partial(self.cache.findStrict, afterMs)
-        rechatCall = functools.partial(super(CachedRechatService, self)._searchAfter, after)
+        rechatCall = functools.partial(super(CachedService, self)._searchAfter, after)
         cachePut = functools.partial(self.cache.putAfter, after)
         fallbackCacheCheck = functools.partial(self.cache.findLoose, afterMs)
         return self._search(cacheCheck, rechatCall, cachePut, fallbackCacheCheck)
     def _searchStart(self):
         cacheCheck = self.cache.findStart
-        rechatService = super(CachedRechatService, self)._searchStart
+        rechatService = super(CachedService, self)._searchStart
         cachePut = self.cache.putStart
         fallbackCacheCheck = functools.partial(self.cache.findLoose, 0)
         return self._search(cacheCheck, rechatService, cachePut, fallbackCacheCheck)

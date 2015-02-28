@@ -9,7 +9,7 @@ class StreamInfo():
         self.recordedAt = streamInfoJson['recorded_at']
         self.recordedAtMs = datetimeStringToLong(self.recordedAt)
 
-class TwitchAPI(object):
+class API(object):
     def __init__(self):
         pass
     def _log(self, msg):return d.component('twitch.api', msg)
@@ -28,19 +28,19 @@ class TwitchAPI(object):
         url = self._log('http://api.twitch.tv/api/videos/%s' %videoId)
         return jsonRequest(url)
 
-class CachedTwitchAPI(TwitchAPI):
+class CachedAPI(API):
     def __init__(self):
         self.cache = Cache('twitch')
     def _log(self, msg): return d.component('twitch.cApi', msg)
-    def _getInfo(self, id, superGetInfo):
+    def _getInfo(self, id, getInfo):
         json = self.cache.readJSON(id)
         if(json != None):
             return json
         else:
-            response = superGetInfo(id)
+            response = getInfo(id)
             self.cache.putJSON(id, response)
             return response
     def streamInfo(self, streamId):
-        return self._getInfo(streamId, super(CachedTwitchAPI, self).streamInfo)
+        return self._getInfo(streamId, super(CachedAPI, self).streamInfo)
     def videoInfo(self, videoId):
-        return self._getInfo(streamId, supert(CachedTwitchAPI, self).videoInfo)
+        return self._getInfo(streamId, supert(CachedAPI, self).videoInfo)
