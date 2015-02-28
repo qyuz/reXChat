@@ -1,29 +1,20 @@
-import xbmc, xbmcvfs, stuff, classes
+import common, rechat, twitch, xbmc, xbmcvfs
+from common import Cache, Debugger
+from rechat import CachedRechatService, RechatService
+from twitch import CachedTwitchAPI, TwitchAPI
 
 
-d = stuff.Debugger()
+Cache.CACHE_PATH = 'special://temp/reXChat/'
+d = Debugger()
 streams = [
     'v3800416',
 ]
 
-def oldDownload():
-    for streamId in streams:
-        twitch.CACHE_PATH = 'special://temp/reXChat/' + streamId + '/'
-        xbmcvfs.mkdir(xbmc.translatePath(twitch.CACHE_PATH))
-        cPart = 1
-        try:
-            while(True):
-                tVideo = twitch.ArchiveVideo(None, cPart, streamId=streamId)
-                cPart += 1
-        except:
-            d.dialog('finished ' + streamId + ' on ' + str(cPart) + ' part')
-
-
 def download():
-    twitchAPI = classes.TwitchAPI()
+    twitchAPI = CachedTwitchAPI()
     for streamId in streams:
         streamInfo = twitchAPI.getStreamInfo(streamId = streamId)
-        rechatService = classes.CachedRechatService(streamInfo)
+        rechatService = CachedRechatService(streamInfo)
         while(rechatService.hasMore()):
             rechatService.next()
         d.dialog('DONE WITH %s' %streamId)

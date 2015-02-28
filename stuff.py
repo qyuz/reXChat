@@ -4,21 +4,6 @@ addon = xbmcaddon.Addon()
 addonname = addon.getAddonInfo('name')
 ACTION_PREVIOUS_MENU = 10
 
-
-class Debugger():
-    counter = 0
-    def component(self, name, msg):
-        xbmc.log("[reXChat]%s[%s]: %s" %(' '*(15-len(name)), name, msg))
-        return msg
-    def log(self, text):
-        xbmc.log(str(self.counter) + ' [reThat]: ' + str(text))
-        self.counter += 1
-    def dialog(self, message):
-        dialog = xbmcgui.Dialog()
-        dialog.ok("Debugger", str(message))
-
-d = Debugger()
-
 class Utils():
     def readFile(self):
         file = open('C:\Documents and Settings\Ljoha\Application Data\XBMC\cache\changelog.txt')
