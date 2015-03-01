@@ -13,6 +13,9 @@ class API(object):
     def __init__(self):
         pass
     def _log(self, msg):return d.component('twitch.api', msg)
+    def getBroadcasts(self, channelName):
+        url = self._log('https://api.twitch.tv/kraken/channels/%s/videos?broadcasts=true' %channelName)
+        return jsonRequest(url)
     def getStreamInfo(self, streamId=None, videoId=None):
         videoInfo = None
         if streamId == None:

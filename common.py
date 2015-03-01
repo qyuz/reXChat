@@ -33,7 +33,7 @@ def longToDatetimeString(long):
 
 
 class Cache(object):
-    CACHE_PATH = None
+    CACHE_PATH = 'special://temp/reXChat/'
     def __init__(self, folderName):
         self.translateCachePath = xbmc.translatePath(self.CACHE_PATH)
         self.folderName = folderName
@@ -66,5 +66,45 @@ class Debugger():
     def dialog(self, message):
         dialog = xbmcgui.Dialog()
         dialog.ok("Debugger", str(message))
+
+class Test():
+    def __init__(self, report, stop):
+        self.report = report
+        self.stop = stop
+        self.summary = ""
+        self.count = 0
+        self.debugger = Debugger()
+    def go(self):
+        if self.count > 0:
+            if self.report == Report.SUMMARY:
+                result = "Failed %s test%s\n%s" %(self.count, '' if str(self.count)[-1] == "1" else 's', self.summary)
+                self.debugger.dialog(result)
+                self.debugger.log(result)
+        else:
+            self.debugger.dialog('Tested OK')
+    def test(self, bool, message, obj=None):
+        if not bool:
+            self.count += 1
+            fMessage = "%s\n" %message
+            fObj = fObj = "%s\n" %obj if obj else None
+            if self.report == Report.SUMMARY:
+                self.summary += fMessage
+                if obj:
+                    self.summary += fObj
+            elif self.report == Report.EACH:
+                self.debugger.dialog('Failed\n%s' %fMessage)
+                self.debugger.log('Failed\n%s' %fMessage)
+                if obj:
+                    self.debugger.dialog(fObj)
+                    self.debugger.log(fObj)
+            if self.stop:
+                if self.report == Report.SUMMARY:
+                    self.go()
+                self.debugger.dialog("Stop on test fail.")
+                raise Exception("Stop on test fail exception.")
+
+class Report():
+    EACH = 'EACH'
+    SUMMARY = 'SUMMARY'
 
 d = Debugger()
