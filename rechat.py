@@ -41,8 +41,8 @@ class Cache(common.Cache):
         self._put('start_', self.streamInfo.recordedAt, response)
 
 class Service(object):
-    def __init__(self, streamInfo):
-        self.streamInfo = streamInfo
+    def __init__(self):
+        self.streamInfo = None
         self.lastReceivedAt = None
         self.end = False
     def _log(self, msg): return d.component('rechat.service', msg)
@@ -77,11 +77,21 @@ class Service(object):
             response = self._searchAfter(self.lastReceivedAt)
         rechatMessages = self._response(response)
         return rechatMessages
+    def nextWithRange(self):
+        start = self.streamInfo.recordedAt if self.lastReceivedAt == None else self.lastReceivedAt
+        startMs = datetimeStringToLong(start)
+        rMessages = self.next()
+        #do something with end when it's last
+        end = start if len(rMessages) == 0 else rMessages[-1]['_source']['recieved_at']
+        endMs = datetimeStringToLong(end)
+        return rMessages, startMs, endMs
+    def setStreamInfo(self, streamInfo):
+        self.streamInfo = streamInfo
 
 class CachedService(Service):
-    def __init__(self, streamInfo):
-        super(CachedService, self).__init__(streamInfo)
-        self.cache = Cache(streamInfo)
+    def __init__(self):
+        super(CachedService, self).__init__()
+        self.cache = None
     def _log(self, msg): return d.component('rechat.cService', msg)
     def _search(self, cacheCheck, rechatCall, cachePut, fallbackCacheCheck):
         cacheFileName = cacheCheck()
@@ -112,6 +122,9 @@ class CachedService(Service):
         cachePut = self.cache.putStart
         fallbackCacheCheck = functools.partial(self.cache.findLoose, 0)
         return self._search(cacheCheck, rechatService, cachePut, fallbackCacheCheck)
+    def setStreamInfo(self, streamInfo):
+        super(CachedService, self).setStreamInfo(streamInfo)
+        self.cache = Cache(streamInfo)
 
 class Message():
     lineLength = 17

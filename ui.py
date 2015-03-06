@@ -39,9 +39,14 @@ class ChatRenderer(OverlayChat):
         for line in message.getLines():
             self.addLine(line)
         self.messageIndex[message.id] = self.chat.size() - 1
-    def setMessages(self, messages, focus=None):
+    def addMessages(self, messages, focus=None):
+        for message in messages:
+            self.addMessage(message)
+    def clear(self):
         self.messageIndex = {}
         self.chat.reset()
+    def setMessages(self, messages, focus=None):
+        self.clear()
         for message in messages:
             self.addMessage(message)
     def scrollToMessage(self, message):

@@ -10,6 +10,7 @@ twitchChannel = 'cereth'
 videoLength = 1000
 twitchAPI = API()
 cachedTwitchAPI = CachedAPI()
+rechatService = Service()
 
 #DATETIME
 testRunner.test(common.datetimeStringToLong("2015-01-15T14:32:47.650Z") == 1421332367650,
@@ -42,7 +43,7 @@ streamId = twitchVideo['_id']
 streamInfo = twitchAPI.getStreamInfo(streamId=streamId)
 
 #RECHAT
-rechatService = Service(streamInfo)
+rechatService.setStreamInfo(streamInfo)
 rechatMessages = rechatService.next()
 
 testRunner.test(len(rechatMessages) == 500,
