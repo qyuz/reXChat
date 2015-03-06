@@ -5,7 +5,7 @@ from common import Cache, Debugger
 Cache.CACHE_PATH = 'special://temp/reXChat/'
 d = Debugger()
 streams = [
-    'v3800416',
+    'v3860959',
 ]
 
 def download():
