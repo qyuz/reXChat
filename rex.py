@@ -37,10 +37,14 @@ class PlaybackController(xbmc.Monitor):
         self.renderedEnd = None
         self.twitchAPI = CachedAPI()
         self.rechatService = CachedService()
+    def clearChat(self):
+        self.renderedStart = None
+        self.renderedEnd = None
+        self.chat.clear()
     def fetchMessages(self):
         rMessages, start, end = self.rechatService.nextWithRange()
-        self.fetchedStart = start - self.streamInfo.recordedAtMs
-        self.fetchedEnd = end - self.streamInfo.recordedAtMs
+        self.fetchedStart = self.toPlayerTime(start)
+        self.fetchedEnd = self.toPlayerTime(end)
         self.messages = map(lambda rm: Message(rm, self.streamInfo.recordedAtMs), rMessages)
         return len(self.messages)
     def getStreamInfo(self):
@@ -69,6 +73,8 @@ class PlaybackController(xbmc.Monitor):
     def updateSettings(self):
         self.settings.update()
         self.settings['outdated'] = False
+    def toPlayerTime(self, receivedAtMs):
+        return receivedAtMs - self.streamInfo.recordedAtMs
 
 playback = PlaybackController()
 playback.getStreamInfo()
@@ -79,10 +85,24 @@ d.dialog(playback.isRendered(xbmc.Player().getTime()))
 playback.render()
 d.dialog(playback.isRendered(xbmc.Player().getTime()))
 for i in range(100):
-    try:
+#    try:
 #        d.dialog(i)
+    if(playback.isRendered(xbmc.Player().getTime())):
         playback.scroll(xbmc.Player().getTime())
-        xbmc.sleep(200)
-    except:
-        d.dialog('exception')
+    else:
+#        d.dialog('not rendered %s' %xbmc.Player().getTime())
+        resultLines = []
+        i = -1
+        while(len(resultLines) < 28):
+            message = playback.messages[i]
+            i = i - 1
+            lines = message.getLines()
+            resultLines = lines + resultLines
+        playback.fetchMessages()
+        playback.clearChat()
+        playback.chat.addLines(resultLines[-28:])
+        playback.render()
+    xbmc.sleep(200)
+#    except:
+#        d.dialog('exception')
 playback.stop()

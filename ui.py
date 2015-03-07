@@ -17,6 +17,9 @@ class OverlayChat(object):
         self.id = self.chat.getId()
     def addLine(self, line):
         self.chat.addItem(line)
+    def addLines(self, lines):
+        for line in lines:
+            self.addLine(line)
     def show(self):
         self.showing = True
     def hide(self):
@@ -36,8 +39,7 @@ class ChatRenderer(OverlayChat):
         super(ChatRenderer, self).__init__()
         self.messageIndex = {}
     def addMessage(self, message):
-        for line in message.getLines():
-            self.addLine(line)
+        self.addLines(message.getLines())
         self.messageIndex[message.id] = self.chat.size() - 1
     def addMessages(self, messages, focus=None):
         for message in messages:
