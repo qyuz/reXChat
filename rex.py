@@ -31,6 +31,8 @@ class PlaybackController(xbmc.Monitor):
     def __init__(self):
         self.settings = Settings()
         self.chat = ChatRenderer()
+        self.scrolled = None
+        self.prepend = []
         self.fetchedStart = None
         self.fetchedEnd = None
         self.renderedStart = None
@@ -55,7 +57,23 @@ class PlaybackController(xbmc.Monitor):
         return playerTime >= self.renderedStart and playerTime <= self.renderedEnd
     def onSettingsChanged(self):
         self.settings['outdated'] = True
+    def preparePrepend(self):
+        linesSeen = []
+        linesNonSeen = []
+        foundScrolled = False
+        i = -1
+        while(len(linesSeen) < 28):
+            message = self.messages[i]
+            i = i - 1
+            lines = message.getLines()
+            if((self.scrolled != None and message.id == self.scrolled.id) or foundScrolled == True):
+                foundScrolled = True
+                linesSeen = lines + linesSeen
+            else:
+                linesNonSeen = lines + linesNonSeen
+        self.prepend = linesSeen[-28:] + linesNonSeen
     def render(self):
+        self.chat.addLines(self.prepend)
         self.chat.addMessages(self.messages)
         self.renderedStart = self.fetchedStart
         self.renderedEnd = self.fetchedEnd
@@ -66,6 +84,7 @@ class PlaybackController(xbmc.Monitor):
             if (message.absoluteTimeMs > playerTime):
                 if (scroll != None):
                     self.chat.scrollToMessage(scroll)
+                    self.scrolled = scroll
                 return
             scroll = message
     def stop(self):
@@ -90,17 +109,10 @@ for i in range(100):
     if(playback.isRendered(xbmc.Player().getTime())):
         playback.scroll(xbmc.Player().getTime())
     else:
-#        d.dialog('not rendered %s' %xbmc.Player().getTime())
-        resultLines = []
-        i = -1
-        while(len(resultLines) < 28):
-            message = playback.messages[i]
-            i = i - 1
-            lines = message.getLines()
-            resultLines = lines + resultLines
+        d.dialog('not rendered %s' %xbmc.Player().getTime())
+        playback.preparePrepend()
         playback.fetchMessages()
         playback.clearChat()
-        playback.chat.addLines(resultLines[-28:])
         playback.render()
     xbmc.sleep(200)
 #    except:
