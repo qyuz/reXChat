@@ -32,6 +32,7 @@ class PlaybackController(xbmc.Monitor):
         self.settings = Settings()
         self.chat = ChatRenderer()
         self.scrolled = None
+        self.chatRows = 28
         self.prepend = []
         self.fetchedStart = None
         self.fetchedEnd = None
@@ -40,6 +41,7 @@ class PlaybackController(xbmc.Monitor):
         self.twitchAPI = CachedAPI()
         self.rechatService = CachedService()
     def clearChat(self):
+        self.scrolled = None
         self.renderedStart = None
         self.renderedEnd = None
         self.chat.clear()
@@ -58,20 +60,23 @@ class PlaybackController(xbmc.Monitor):
     def onSettingsChanged(self):
         self.settings['outdated'] = True
     def preparePrepend(self):
+        if(self.scrolled == None):
+            self.prepend = [''] * self.chatRows
+            return
         linesSeen = []
         linesNonSeen = []
         foundScrolled = False
         i = -1
-        while(len(linesSeen) < 28):
+        while(len(linesSeen) < self.chatRows):
             message = self.messages[i]
             i = i - 1
             lines = message.getLines()
-            if((self.scrolled != None and message.id == self.scrolled.id) or foundScrolled == True):
+            if(message.id == self.scrolled.id or foundScrolled == True):
                 foundScrolled = True
                 linesSeen = lines + linesSeen
             else:
                 linesNonSeen = lines + linesNonSeen
-        self.prepend = linesSeen[-28:] + linesNonSeen
+        self.prepend = linesSeen[-self.chatRows:] + linesNonSeen
     def render(self):
         self.chat.addLines(self.prepend)
         self.chat.addMessages(self.messages)
@@ -101,6 +106,7 @@ playback.fetchMessages()
 d.dialog(playback.renderedStart)
 d.dialog(playback.renderedEnd)
 d.dialog(playback.isRendered(xbmc.Player().getTime()))
+playback.preparePrepend()
 playback.render()
 d.dialog(playback.isRendered(xbmc.Player().getTime()))
 for i in range(100):
