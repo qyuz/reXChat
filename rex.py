@@ -1,4 +1,4 @@
-import os, xbmcaddon
+import os, xbmc, xbmcaddon
 from common import Debugger
 from rechat import CachedService, Message
 from twitch import CachedAPI
@@ -33,7 +33,8 @@ class PlaybackController(xbmc.Monitor):
         self.chat = ChatRenderer()
         self.scrolled = None
         self.chatRows = 28
-        self.prepend = []
+        self.prependLines = None
+        self.prependMessages = None
         self.fetchedStart = None
         self.fetchedEnd = None
         self.renderedStart = None
@@ -47,13 +48,19 @@ class PlaybackController(xbmc.Monitor):
         self.chat.clear()
     def fetchMessages(self):
         rMessages, start, end = self.rechatService.nextWithRange()
-        self.fetchedStart = self.toPlayerTime(start)
+        if(len(self.prependMessages) > 0):
+            self.fetchedStart = self.toPlayerTime(self.prependMessages[0].receivedAtMs)
+        else:
+            self.fetchedStart = self.toPlayerTime(start)
         self.fetchedEnd = self.toPlayerTime(end)
-        self.messages = map(lambda rm: Message(rm, self.streamInfo.recordedAtMs), rMessages)
+        self.messages = self.prependMessages + map(lambda rm: Message(rm, self.streamInfo.recordedAtMs), rMessages)
         return len(self.messages)
     def getStreamInfo(self):
         self.streamInfo = self.twitchAPI.getStreamInfo(streamId='v3860959')
         self.rechatService.setStreamInfo(self.streamInfo)
+    def isFetched(self, playerTime):
+        playerTime = playerTime * 1000
+        return playerTime >= self.fetchedStart and playerTime <= self.fetchedEnd
     def isRendered(self, playerTime):
         playerTime = playerTime * 1000
         return playerTime >= self.renderedStart and playerTime <= self.renderedEnd
@@ -61,10 +68,11 @@ class PlaybackController(xbmc.Monitor):
         self.settings['outdated'] = True
     def preparePrepend(self):
         if(self.scrolled == None):
-            self.prepend = [''] * self.chatRows
+            self.prependLines = [''] * self.chatRows
+            self.prependMessages = []
             return
         linesSeen = []
-        linesNonSeen = []
+        messagesNotSeen = []
         foundScrolled = False
         i = -1
         while(len(linesSeen) < self.chatRows):
@@ -75,10 +83,11 @@ class PlaybackController(xbmc.Monitor):
                 foundScrolled = True
                 linesSeen = lines + linesSeen
             else:
-                linesNonSeen = lines + linesNonSeen
-        self.prepend = linesSeen[-self.chatRows:] + linesNonSeen
+                messagesNotSeen.insert(0, message)
+        self.prependLines = linesSeen[-self.chatRows:]
+        self.prependMessages = messagesNotSeen
     def render(self):
-        self.chat.addLines(self.prepend)
+        self.chat.addLines(self.prependLines)
         self.chat.addMessages(self.messages)
         self.renderedStart = self.fetchedStart
         self.renderedEnd = self.fetchedEnd
@@ -102,25 +111,17 @@ class PlaybackController(xbmc.Monitor):
 
 playback = PlaybackController()
 playback.getStreamInfo()
-playback.fetchMessages()
-d.dialog(playback.renderedStart)
-d.dialog(playback.renderedEnd)
-d.dialog(playback.isRendered(xbmc.Player().getTime()))
-playback.preparePrepend()
-playback.render()
-d.dialog(playback.isRendered(xbmc.Player().getTime()))
 for i in range(100):
-#    try:
-#        d.dialog(i)
-    if(playback.isRendered(xbmc.Player().getTime())):
-        playback.scroll(xbmc.Player().getTime())
-    else:
-        d.dialog('not rendered %s' %xbmc.Player().getTime())
+    playerTime = xbmc.Player().getTime()
+    fetched = playback.isFetched(playerTime)
+    rendered = playback.isRendered(playerTime)
+    if(fetched == False):
         playback.preparePrepend()
         playback.fetchMessages()
+    if(fetched == True and rendered == False):
         playback.clearChat()
         playback.render()
+    if(rendered == True):
+        playback.scroll(playerTime)
     xbmc.sleep(200)
-#    except:
-#        d.dialog('exception')
 playback.stop()
