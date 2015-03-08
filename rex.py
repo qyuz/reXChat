@@ -1,4 +1,4 @@
-import os, xbmc, xbmcaddon
+import functools, os, xbmc, xbmcaddon
 from common import Debugger
 from rechat import CachedService, Message
 from twitch import CachedAPI
@@ -39,16 +39,25 @@ class PlaybackController(xbmc.Monitor):
         self.fetchedEnd = None
         self.twitchAPI = CachedAPI()
         self.rechatService = CachedService()
-    def clearChat(self):
+    def _fetch(self, fetch):
         self.rendered = False
-        self.chat.clear()
-    def fetchMessages(self):
-        self.rendered = False
-        rMessages, start, end = self.rechatService.nextWithRange()
+        rMessages, start, end = fetch()
         self.fetchedStart = self.toPlayerTime(start)
         self.fetchedEnd = self.toPlayerTime(end)
         self.messages = map(lambda rm: Message(rm, self.streamInfo.recordedAtMs), rMessages)
         return len(self.messages)
+    def clearChat(self):
+        self.rendered = False
+        self.chat.clear()
+    def fetchAfter(self, playerTime):
+        afterMs = self.fromPlayerTime(playerTime)
+        fetch = functools.partial(self.rechatService.afterMsWithRange, afterMs)
+        return self._fetch(fetch)
+    def fetchNext(self):
+        return self._fetch(self.rechatService.nextWithRange)
+    def fromPlayerTime(self, playerTime):
+        playerTimeMs = playerTime * 1000
+        return int(self.streamInfo.recordedAtMs + playerTimeMs)
     def getStreamInfo(self):
         self.streamInfo = self.twitchAPI.getStreamInfo(streamId='v3860959')
         self.rechatService.setStreamInfo(self.streamInfo)
@@ -99,7 +108,7 @@ for i in range(100):
     playback.scroll(playerTime)
     if(fetched == False):
         playback.preparePrepend()
-        playback.fetchMessages()
+        playback.fetchAfter(playerTime)
     if(fetched == True and playback.rendered == False):
         playback.clearChat()
         playback.render()

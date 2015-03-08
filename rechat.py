@@ -68,6 +68,13 @@ class Service(object):
         return self._response(self._searchAfter(after))
     def afterMs(self, afterMs):
         return self.after(longToDatetimeString(afterMs))
+    def afterMsWithRange(self, afterMs):
+        startMs = afterMs
+        rMessages = self.afterMs(afterMs)
+        #do something with end when it's last
+        end = start if len(rMessages) == 0 else rMessages[-1]['_source']['recieved_at']
+        endMs = datetimeStringToLong(end)
+        return rMessages, startMs, endMs
     def hasMore(self):
         return not self.end
     def next(self):
