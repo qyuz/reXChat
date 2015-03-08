@@ -62,8 +62,14 @@ class PlaybackController(xbmc.Monitor):
         self.streamInfo = self.twitchAPI.getStreamInfo(streamId='v3860959')
         self.rechatService.setStreamInfo(self.streamInfo)
     def isFetched(self, playerTime):
-        playerTime = playerTime * 1000
-        return playerTime >= self.fetchedStart and playerTime <= self.fetchedEnd
+        playerTimeMs = playerTime * 1000
+        return playerTimeMs >= self.fetchedStart and playerTimeMs <= self.fetchedEnd
+    def isFetchedBoundsEpsilon(self, playerTime):
+        playerTimeMs = playerTime * 1000
+        isFetched = self.isFetched(playerTime)
+        beforeStart = playerTimeMs - playback.fetchedStart
+        afterEnd = playerTimeMs - playback.fetchedEnd
+        return isFetched, beforeStart, afterEnd
     def onSettingsChanged(self):
         self.settings['outdated'] = True
     def preparePrepend(self):
@@ -102,15 +108,26 @@ class PlaybackController(xbmc.Monitor):
 
 playback = PlaybackController()
 playback.getStreamInfo()
+playback.fetchNext()
+playback.preparePrepend()
 for i in range(100):
     playerTime = xbmc.Player().getTime()
-    fetched = playback.isFetched(playerTime)
+    isFetched, beforeFetchedRange, afterFetchedRange = playback.isFetchedBoundsEpsilon(playerTime)
     playback.scroll(playerTime)
-    if(fetched == False):
-        playback.preparePrepend()
-        playback.fetchAfter(playerTime)
-    if(fetched == True and playback.rendered == False):
-        playback.clearChat()
+    if(isFetched == False):
+        if(beforeFetchedRange < 0 or afterFetchedRange > 900000):
+#            d.dialog('doing after because beforeFetchedRange: [%s]\nafterFetchedRange: [%s]' %(beforeFetchedRange, afterFetchedRange))
+            playback.clearChat()
+            playback.preparePrepend()
+            playback.fetchAfter(playerTime)
+        else:
+#            d.dialog('doing next because beforeFetchedRange: [%s]\nafterFetchedRange: [%s]' %(beforeFetchedRange, afterFetchedRange))
+            playback.preparePrepend()
+            playback.clearChat()
+            playback.fetchNext()
+        isFetched = True #ensures rapid render
+    if(isFetched == True and playback.rendered == False):
+#        d.dialog('rendering')
         playback.render()
     xbmc.sleep(200)
 playback.stop()
