@@ -49,24 +49,23 @@ class PlaybackController(xbmc.Monitor):
     def clearChat(self):
         self.rendered = False
         self.chat.clear()
-    def fetchAfter(self, playerTime):
-        afterMs = self.fromPlayerTime(playerTime)
+    def fetchAfter(self, playerTimeMs):
+        afterMs = self.fromPlayerTime(playerTimeMs)
         fetch = functools.partial(self.rechatService.afterMsWithRange, afterMs)
         return self._fetch(fetch)
     def fetchNext(self):
         return self._fetch(self.rechatService.nextWithRange)
-    def fromPlayerTime(self, playerTime):
-        playerTimeMs = playerTime * 1000
+    def fromPlayerTime(self, playerTimeMs):
         return int(self.streamInfo.recordedAtMs + playerTimeMs)
+    def getPlayerTime(self):
+        return int(xbmc.Player().getTime() * 1000)
     def getStreamInfo(self):
         self.streamInfo = self.twitchAPI.getStreamInfo(streamId='v3860959')
         self.rechatService.setStreamInfo(self.streamInfo)
-    def isFetched(self, playerTime):
-        playerTimeMs = playerTime * 1000
+    def isFetched(self, playerTimeMs):
         return playerTimeMs >= self.fetchedStart and playerTimeMs <= self.fetchedEnd
-    def isFetchedBoundsEpsilon(self, playerTime):
-        playerTimeMs = playerTime * 1000
-        isFetched = self.isFetched(playerTime)
+    def isFetchedBoundsEpsilon(self, playerTimeMs):
+        isFetched = self.isFetched(playerTimeMs)
         beforeStart = playerTimeMs - playback.fetchedStart
         afterEnd = playerTimeMs - playback.fetchedEnd
         return isFetched, beforeStart, afterEnd
@@ -87,12 +86,11 @@ class PlaybackController(xbmc.Monitor):
         self.chat.addLines(self.prependLines)
         self.chat.addMessages(self.messages)
         self.rendered = True
-    def scroll(self, playerTime):
+    def scroll(self, playerTimeMs):
         if (self.rendered == True):
-            playerTime = playerTime * 1000
             scroll = None
             for message in self.messages:
-                if (message.absoluteTimeMs > playerTime):
+                if (message.absoluteTimeMs > playerTimeMs):
                     if (scroll != None):
                         self.chat.scrollToMessage(scroll)
                     return
@@ -111,15 +109,15 @@ playback.getStreamInfo()
 playback.fetchNext()
 playback.preparePrepend()
 for i in range(100):
-    playerTime = xbmc.Player().getTime()
-    isFetched, beforeFetchedRange, afterFetchedRange = playback.isFetchedBoundsEpsilon(playerTime)
-    playback.scroll(playerTime)
+    playerTimeMs = playback.getPlayerTime()
+    isFetched, beforeFetchedRange, afterFetchedRange = playback.isFetchedBoundsEpsilon(playerTimeMs)
+    playback.scroll(playerTimeMs)
     if(isFetched == False):
         if(beforeFetchedRange < 0 or afterFetchedRange > 900000):
 #            d.dialog('doing after because beforeFetchedRange: [%s]\nafterFetchedRange: [%s]' %(beforeFetchedRange, afterFetchedRange))
             playback.clearChat()
             playback.preparePrepend()
-            playback.fetchAfter(playerTime)
+            playback.fetchAfter(playerTimeMs)
         else:
 #            d.dialog('doing next because beforeFetchedRange: [%s]\nafterFetchedRange: [%s]' %(beforeFetchedRange, afterFetchedRange))
             playback.preparePrepend()
