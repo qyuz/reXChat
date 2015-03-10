@@ -5,13 +5,14 @@ addonPath = xbmc.translatePath(addon.getAddonInfo('path'))
 mediaPath = os.path.join(addonPath, 'resources', 'skins', 'Default', 'media')
 
 class OverlayChat(object):
-    def __init__(self):
+    def __init__(self, parentWindow=12005,
+                 backgroundX=-110, backgroundY=0, backgroundWidth=418, backgroundHeight=608,
+                 chatX=0, chatY=0, chatWidth=320, chatHeight=600, lineHeight=20, fontSize='font12'):
         self.showing = True
-        self.fullScreenVideo = xbmcgui.Window(12005)
+        self.fullScreenVideo = xbmcgui.Window(parentWindow)
         chatBackground = os.path.join(mediaPath, 'ChatBackground.png')
-        self.background = xbmcgui.ControlImage(-110, 0, 418, 564, chatBackground, aspectRatio=0)
-        # w*22 font12 width 320, itemTextXOffset -2
-        self.chat = xbmcgui.ControlList(0, 0, 320, 600, 'font12', 'FFFFFFFF', 'IrcChat/ChatArrowFO.png', 'pstvButtonFocus.png', 'FFFFFFFF', 0, 0, -2, 0, 20, 0, 0)
+        self.background = xbmcgui.ControlImage(backgroundX, backgroundY, backgroundWidth, backgroundHeight, chatBackground, aspectRatio=0)
+        self.chat = xbmcgui.ControlList(chatX, chatY, chatWidth, chatHeight, fontSize, 'FFFFFFFF', 'IrcChat/ChatArrowFO.png', 'pstvButtonFocus.png', 'FFFFFFFF', 0, 0, 0, 0, lineHeight, 0, 0)
         self.fullScreenVideo.addControl(self.background)
         self.fullScreenVideo.addControl(self.chat)
         self.id = self.chat.getId()
@@ -30,9 +31,13 @@ class OverlayChat(object):
         index = int(index)
         self.chat.selectItem(index)
     def resizeBackground(self, x, y, width, height):
-        self.fullScreenVideo.removeControl(self.background)
-        self.background = xbmcgui.ControlImage(x, y, width, height, xbmc.translatePath(classes.CACHE_PATH + 'ChatBackground.png'))
-        self.fullScreenVideo.addControl(self.background)
+        self.background.setPosition(x, y)
+        self.background.setWidth(width)
+        self.background.setHeight(height)
+    def resizeChat(self, x, y, width, height):
+        self.chat.setPosition(x, y)
+        self.chat.setWidth(width)
+        self.chat.setHeight(height)
 
 class ChatRenderer(OverlayChat):
     def __init__(self):

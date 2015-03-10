@@ -7,8 +7,8 @@
     <string id="25021">Chat Y</string>
     <string id="25022">Chat width</string>
     <string id="25023">Chat height</string>
-    <string id="25024">Chat text X offset</string>
-    <string id="25025">Chat text Y offset</string>
+    <string id="25024">Chat line height</string>
+    <string id="25025">Font size</string>
     <string id="25026">Characters per line</string>
     <string id="25027">Delay</string>
 </strings>
