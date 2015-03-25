@@ -54,6 +54,7 @@ class PlaybackController(xbmc.Monitor):
     def applySettings(self):
         self.chat.resizeBackground(self.settings.backgroundX, self.settings.backgroundY, self.settings.backgroundWidth, self.settings.backgroundHeight)
         self.chat.resizeChat(self.settings.chatX, self.settings.chatY, self.settings.chatWidth, self.settings.chatHeight)
+        Message.lineLength = self.settings.characters
     def clearChat(self):
         self.rendered = False
         self.chat.clear()
