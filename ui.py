@@ -45,7 +45,7 @@ class ChatRenderer(OverlayChat):
         self.messageIndex = {}
     def addMessage(self, message):
         self.addLines(message.getLines())
-        self.messageIndex[message.id] = self.chat.size() - 1
+        self.messageIndex[message.id] = self.chat.size() - 3 #should be -1 but ControlList is fishy
     def addMessages(self, messages, focus=None):
         for message in messages:
             self.addMessage(message)
