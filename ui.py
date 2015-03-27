@@ -27,8 +27,11 @@ class OverlayChat(object):
         self.showing = False
         self.fullScreenVideo.removeControl(self.background)
         self.fullScreenVideo.removeControl(self.chat)
-    def scrollTo(self, index):
-        index = int(index)
+    def scrollTo(self, index, direction="forward"):
+        if(direction == "forward"):
+            index = index
+        else:
+            index = index - 27
         self.chat.selectItem(index)
     def resizeBackground(self, x, y, width, height):
         self.background.setPosition(x, y)
@@ -56,7 +59,10 @@ class ChatRenderer(OverlayChat):
         self.clear()
         for message in messages:
             self.addMessage(message)
-    def scrollToMessage(self, message):
-        self.scrollToMessageId(message.id)
-    def scrollToMessageId(self, messageId):
-        self.scrollTo(self.messageIndex[messageId])
+    def scrollToMessage(self, message, direction="forward"):
+        if(message == None):
+            self.scrollTo(0)
+        else:
+            self.scrollToMessageId(message.id, direction=direction)
+    def scrollToMessageId(self, messageId, direction="forward"):
+        self.scrollTo(self.messageIndex[messageId], direction=direction)

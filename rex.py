@@ -95,13 +95,12 @@ class PlaybackController(xbmc.Monitor):
         self.chat.addLines(self.prependLines)
         self.chat.addMessages(self.messages)
         self.rendered = True
-    def scroll(self, playerTimeMs):
+    def scroll(self, playerTimeMs, direction="forward"):
         if (self.rendered == True):
             scroll = None
             for message in self.messages:
                 if (message.absoluteTimeMs > playerTimeMs):
-                    if (scroll != None):
-                        self.chat.scrollToMessage(scroll)
+                    self.chat.scrollToMessage(scroll, direction=direction)
                     return
                 scroll = message
             self.chat.scrollToMessage(scroll)
@@ -117,13 +116,16 @@ playback = PlaybackController()
 playback.getStreamInfo()
 playback.fetchNext()
 playback.preparePrepend()
+
+lastPlayerTimeMs = 0
 for i in range(100):
     if(playback.settings.updated == False):
         playback.updateSettings()
         playback.applySettings()
     playerTimeMs = playback.getPlayerTime()
     isFetched, beforeFetchedRange, afterFetchedRange = playback.isFetchedBoundsEpsilon(playerTimeMs)
-    playback.scroll(playerTimeMs)
+    playback.scroll(playerTimeMs, direction=("forward" if playerTimeMs > lastPlayerTimeMs else "backward") )
+    lastPlayerTimeMs = playerTimeMs
     if(isFetched == False):
         if(beforeFetchedRange < 0 or afterFetchedRange > 900000):
 #            d.dialog('doing after because beforeFetchedRange: [%s]\nafterFetchedRange: [%s]' %(beforeFetchedRange, afterFetchedRange))
