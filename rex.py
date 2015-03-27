@@ -105,6 +105,7 @@ class PlaybackController(xbmc.Monitor):
                     return
                 scroll = message
             self.chat.scrollToMessage(scroll)
+            xbmc.sleep(333) #let scroll animation finish
     def stop(self):
         self.chat.hide()
     def updateSettings(self):
