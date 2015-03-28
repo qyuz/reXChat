@@ -37,7 +37,7 @@ class PlaybackController(xbmc.Monitor):
         self.chat = ChatRenderer()
         self.messages = None
         self.rendered = False
-        self.chatRows = int(self.settings.chatHeight / self.settings.chatLineHeight)
+        self.chatRows = self.chat.chatRowCount
         self.prependLines = None
         self.fetchedStart = None
         self.fetchedEnd = None
@@ -53,7 +53,7 @@ class PlaybackController(xbmc.Monitor):
         return len(self.messages)
     def applySettings(self):
         self.chat.resizeBackground(self.settings.backgroundX, self.settings.backgroundY, self.settings.backgroundWidth, self.settings.backgroundHeight)
-        self.chat.resizeChat(self.settings.chatX, self.settings.chatY, self.settings.chatWidth, self.settings.chatHeight)
+        self.chat.resizeChat(self.settings.chatX, self.settings.chatY, self.settings.chatWidth, self.settings.chatHeight, self.settings.chatLineHeight)
         Message.lineLength = self.settings.characters
     def clearChat(self):
         self.rendered = False
