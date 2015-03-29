@@ -1,5 +1,7 @@
-import common, functools, re, urllib, xbmcvfs
+import common, functools, re, urllib, xbmcvfs, xbmc, sys
 from common import datetimeStringToLong, jsonRequest, longToDatetimeString
+
+LONG_MAX = 9223372036854775807
 
 d = common.Debugger()
 
@@ -69,11 +71,14 @@ class Service(object):
     def afterMs(self, afterMs):
         return self.after(longToDatetimeString(afterMs))
     def afterMsWithRange(self, afterMs):
+        startMs = end = endMs = rMessages = None
         startMs = afterMs
         rMessages = self.afterMs(afterMs)
-        #do something with end when it's last
-        end = start if len(rMessages) == 0 else rMessages[-1]['_source']['recieved_at']
-        endMs = datetimeStringToLong(end)
+        if(len(rMessages) == 0):
+            endMs = LONG_MAX
+        else:
+            end = rMessages[-1]['_source']['recieved_at']
+            endMs = datetimeStringToLong(end)
         return rMessages, startMs, endMs
     def hasMore(self):
         return not self.end
@@ -85,12 +90,15 @@ class Service(object):
         rechatMessages = self._response(response)
         return rechatMessages
     def nextWithRange(self):
+        start = startMs = end = endMs = rMessages = None
         start = self.streamInfo.recordedAt if self.lastReceivedAt == None else self.lastReceivedAt
         startMs = datetimeStringToLong(start)
         rMessages = self.next()
-        #do something with end when it's last
-        end = start if len(rMessages) == 0 else rMessages[-1]['_source']['recieved_at']
-        endMs = datetimeStringToLong(end)
+        if(len(rMessages) == 0):
+            endMs = LONG_MAX
+        else:
+            end = rMessages[-1]['_source']['recieved_at']
+            endMs = datetimeStringToLong(end)
         return rMessages, startMs, endMs
     def setStreamInfo(self, streamInfo):
         self.streamInfo = streamInfo
