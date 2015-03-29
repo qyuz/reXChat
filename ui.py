@@ -51,6 +51,7 @@ class ChatRenderer(OverlayChat):
     def __init__(self):
         super(ChatRenderer, self).__init__()
         self.messageIndex = {}
+        self.prependLines = []
     def addMessage(self, message):
         self.addLines(message.getLines())
         self.messageIndex[message.id] = self.chat.size() - 1
@@ -60,6 +61,15 @@ class ChatRenderer(OverlayChat):
     def clear(self):
         self.messageIndex = {}
         self.chat.reset()
+    def prependEmpty(self):
+        self.prependLines = [''] * self.chatRowCount
+    def prependContinue(self):
+        self.prependLines = [self.chat.getListItem(self.chat.size() - i).getLabel() for i in range(1, self.chatRowCount + 1)]
+        self.prependLines.reverse()
+    def render(self, messages):
+        self.clear()
+        self.addLines(self.prependLines)
+        self.addMessages(messages)
     def setMessages(self, messages, focus=None):
         self.clear()
         for message in messages:

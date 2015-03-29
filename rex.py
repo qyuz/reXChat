@@ -37,8 +37,6 @@ class PlaybackController(xbmc.Monitor):
         self.chat = ChatRenderer()
         self.messages = None
         self.rendered = False
-        self.chatRows = self.chat.chatRowCount
-        self.prependLines = None
         self.fetchedStart = None
         self.fetchedEnd = None
         self.twitchAPI = CachedAPI()
@@ -55,9 +53,6 @@ class PlaybackController(xbmc.Monitor):
         self.chat.resizeBackground(self.settings.backgroundX, self.settings.backgroundY, self.settings.backgroundWidth, self.settings.backgroundHeight)
         self.chat.resizeChat(self.settings.chatX, self.settings.chatY, self.settings.chatWidth, self.settings.chatHeight, self.settings.chatLineHeight)
         Message.lineLength = self.settings.characters
-    def clearChat(self):
-        self.rendered = False
-        self.chat.clear()
     def fetchAfter(self, playerTimeMs):
         afterMs = self.fromPlayerTime(playerTimeMs)
         fetch = functools.partial(self.rechatService.afterMsWithRange, afterMs)
@@ -80,20 +75,8 @@ class PlaybackController(xbmc.Monitor):
         return isFetched, beforeStart, afterEnd
     def onSettingsChanged(self):
         self.settings.updated = False
-    def preparePrepend(self):
-        if(self.rendered == False):
-            self.prependLines = [''] * self.chatRows
-            return
-        lastLines = []
-        i = -1
-        while(len(lastLines) < self.chatRows):
-            message = self.messages[i]
-            i = i - 1
-            lastLines = message.getLines() + lastLines
-        self.prependLines = lastLines[-self.chatRows:]
     def render(self):
-        self.chat.addLines(self.prependLines)
-        self.chat.addMessages(self.messages)
+        self.chat.render(self.messages)
         self.rendered = True
     def scroll(self, playerTimeMs, direction="forward"):
         if (self.rendered == True):
@@ -115,7 +98,7 @@ class PlaybackController(xbmc.Monitor):
 playback = PlaybackController()
 playback.getStreamInfo()
 playback.fetchNext()
-playback.preparePrepend()
+playback.chat.prependEmpty()
 
 lastPlayerTimeMs = 0
 for i in range(100):
@@ -129,13 +112,11 @@ for i in range(100):
     if(isFetched == False):
         if(beforeFetchedRange < 0 or afterFetchedRange > 900000):
 #            d.dialog('doing after because beforeFetchedRange: [%s]\nafterFetchedRange: [%s]' %(beforeFetchedRange, afterFetchedRange))
-            playback.clearChat()
-            playback.preparePrepend()
+            playback.chat.prependEmpty()
             playback.fetchAfter(playerTimeMs)
         else:
 #            d.dialog('doing next because beforeFetchedRange: [%s]\nafterFetchedRange: [%s]' %(beforeFetchedRange, afterFetchedRange))
-            playback.preparePrepend()
-            playback.clearChat()
+            playback.chat.prependContinue()
             playback.fetchNext()
         isFetched = True #ensures rapid render
     if(isFetched == True and playback.rendered == False):
