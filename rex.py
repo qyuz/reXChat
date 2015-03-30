@@ -116,7 +116,7 @@ for i in range(100):
             playback.fetchAfter(playerTimeMs)
         else:
 #            d.dialog('doing next because beforeFetchedRange: [%s]\nafterFetchedRange: [%s]' %(beforeFetchedRange, afterFetchedRange))
-            playback.chat.prependContinue()
+            playback.chat.prependContinue() if playback.rendered == True else playback.chat.prependEmpty()
             playback.fetchNext()
         isFetched = True #ensures rapid render
     if(isFetched == True and playback.rendered == False):
