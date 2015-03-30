@@ -79,11 +79,14 @@ class PlaybackController(xbmc.Monitor):
         self.chat.render(self.messages)
         self.rendered = True
     def scroll(self, playerTimeMs, direction="forward"):
-        if (self.rendered == True):
+        if(self.rendered == True):
             scroll = None
             for message in self.messages:
-                if (message.absoluteTimeMs > playerTimeMs):
-                    self.chat.scrollToMessage(scroll, direction=direction)
+                if(message.absoluteTimeMs > playerTimeMs):
+                    if(scroll == None):
+                        self.chat.scrollTo(0)
+                    else:
+                        self.chat.scrollToMessage(scroll, direction=direction)
                     return
                 scroll = message
             self.chat.scrollToMessage(scroll)

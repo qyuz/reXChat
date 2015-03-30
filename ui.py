@@ -75,9 +75,6 @@ class ChatRenderer(OverlayChat):
         for message in messages:
             self.addMessage(message)
     def scrollToMessage(self, message, direction="forward"):
-        if(message == None):
-            self.scrollTo(0)
-        else:
-            self.scrollToMessageId(message.id, direction=direction)
+        self.scrollToMessageId(message.id, direction=direction)
     def scrollToMessageId(self, messageId, direction="forward"):
         self.scrollTo(self.messageIndex[messageId] - 2, direction=direction) #ControlList is fishy
