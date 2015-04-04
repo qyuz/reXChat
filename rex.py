@@ -13,7 +13,7 @@ addonpath = xbmc.translatePath(addon.getAddonInfo('path'))
 
 class Settings():
     def __init__(self):
-        self.update()
+        self.updated = False
     def update(self):
         addon = xbmcaddon.Addon()
         self.backgroundX = int(addon.getSetting('backgroundX'))
@@ -41,7 +41,6 @@ class PlaybackController(xbmc.Monitor):
         self.fetchedEnd = None
         self.twitchAPI = CachedAPI()
         self.rechatService = CachedService()
-        self.applySettings()
     def _fetch(self, fetch):
         self.rendered = False
         rMessages, start, end = fetch()
@@ -57,6 +56,8 @@ class PlaybackController(xbmc.Monitor):
         afterMs = self.fromPlayerTime(playerTimeMs)
         fetch = functools.partial(self.rechatService.afterMsWithRange, afterMs)
         return self._fetch(fetch)
+    def fetchStart(self):
+        return self._fetch(self.rechatService.startWithRange)
     def fetchNext(self):
         return self._fetch(self.rechatService.nextWithRange)
     def fromPlayerTime(self, playerTimeMs):
@@ -93,21 +94,22 @@ class PlaybackController(xbmc.Monitor):
             xbmc.sleep(333) #let scroll animation finish
     def stop(self):
         self.chat.hide()
-    def updateSettings(self):
+    def updateSettings(self, apply=False):
         self.settings.update()
+        if(apply==True):
+            self.applySettings()
     def toPlayerTime(self, receivedAtMs):
         return receivedAtMs - self.streamInfo.recordedAtMs
 
 playback = PlaybackController()
 playback.getStreamInfo()
-playback.fetchNext()
-playback.chat.prependEmpty()
 
 lastPlayerTimeMs = 0
 for i in range(100):
     if(playback.settings.updated == False):
-        playback.updateSettings()
-        playback.applySettings()
+        playback.updateSettings(apply=True)
+        playback.fetchStart()
+        playback.chat.prependEmpty()
     playerTimeMs = playback.getPlayerTime()
     isFetched, beforeFetchedRange, afterFetchedRange = playback.isFetchedBoundsEpsilon(playerTimeMs)
     playback.scroll(playerTimeMs, direction=("forward" if playerTimeMs > lastPlayerTimeMs else "backward") )

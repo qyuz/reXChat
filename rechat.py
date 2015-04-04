@@ -102,6 +102,12 @@ class Service(object):
         return rMessages, startMs, endMs
     def setStreamInfo(self, streamInfo):
         self.streamInfo = streamInfo
+    def start(self):
+        self.lastReceivedAt = None
+        return self.next()
+    def startWithRange(self):
+        self.lastReceivedAt = None
+        return self.nextWithRange()
 
 class CachedService(Service):
     def __init__(self):
