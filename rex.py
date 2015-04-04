@@ -1,4 +1,4 @@
-import functools, os, xbmc, xbmcaddon
+import functools, os, xbmc, xbmcaddon, re
 from common import Debugger
 from rechat import CachedService, Message
 from twitch import CachedAPI
@@ -40,6 +40,7 @@ class PlaybackController(xbmc.Monitor):
         self.fetchedStart = None
         self.fetchedEnd = None
         self.twitchAPI = CachedAPI()
+        self.streamInfo = None
         self.rechatService = CachedService()
     def _fetch(self, fetch):
         self.rendered = False
@@ -64,8 +65,27 @@ class PlaybackController(xbmc.Monitor):
         return int(self.streamInfo.recordedAtMs + playerTimeMs)
     def getPlayerTime(self):
         return int(xbmc.Player().getTime() * 1000)
-    def getStreamInfo(self):
-        self.streamInfo = self.twitchAPI.getStreamInfo(streamId='v3860959')
+    def getPlayingFile(self):
+        isPlaying = playingFile = None
+
+        try:
+            playingFile = xbmc.Player().getPlayingFile()
+            isPlaying = True
+        except:
+            isPlaying = False
+        return isPlaying, playingFile
+    def getPlayingStreamId(self):
+        isPlaying = playingFile = streamRegExp = matched = streamId = None
+
+        isPlaying, playingFile = self.getPlayingFile()
+        streamRegExp = '.*-(v\d+)\..*'
+        if(playingFile != None):
+            matched = re.search(streamRegExp, playingFile)
+            if(matched != None):
+                streamId = matched.group(1)
+        return isPlaying, streamId
+    def getStreamInfo(self, streamId):
+        self.streamInfo = self.twitchAPI.getStreamInfo(streamId=streamId)
         self.rechatService.setStreamInfo(self.streamInfo)
     def isFetched(self, playerTimeMs):
         return playerTimeMs >= self.fetchedStart and playerTimeMs <= self.fetchedEnd
@@ -102,10 +122,12 @@ class PlaybackController(xbmc.Monitor):
         return receivedAtMs - self.streamInfo.recordedAtMs
 
 playback = PlaybackController()
-playback.getStreamInfo()
 
 lastPlayerTimeMs = 0
 for i in range(100):
+    if(playback.streamInfo == None):
+        isPlaying, streamId = playback.getPlayingStreamId()
+        playback.getStreamInfo(streamId)
     if(playback.settings.updated == False):
         playback.updateSettings(apply=True)
         playback.fetchStart()
